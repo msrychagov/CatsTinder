@@ -35,8 +35,8 @@ flutter run -d <device_id>
 
 
 ![Главный экран](docs/screenshots/dark/home.png)
-![Свайп - лайк](docs/screenshots/light/like_swipe.png)
-![Свайп - дизлайк](docs/screenshots/light/dislike_swipe.png)
+![Свайп - лайк](docs/screenshots/dark/like_swipe.png)
+![Свайп - дизлайк](docs/screenshots/dark/dislike_swipe.png)
 ![Породы](docs/screenshots/dark/types.png)
 ![Лайки](docs/screenshots/dark/likes.png)
 ![Описание](docs/screenshots/dark/description.png)
