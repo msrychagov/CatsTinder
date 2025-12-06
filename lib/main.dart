@@ -76,6 +76,7 @@ class _CatHomeState extends State<CatHome> {
           ),
         ),
         body: TabBarView(
+          physics: const NeverScrollableScrollPhysics(),
           children: [
             CatSwipePage(
               service: widget.service,
@@ -322,22 +323,30 @@ class _CatCardState extends State<_CatCard>
     final dy = _offset.dy + details.delta.dy;
     final width = MediaQuery.of(context).size.width;
     setState(() {
-      _offset = Offset(dx, dy);
+      _offset = Offset(dx, dy.clamp(-80, 80));
       _angle = dx / width * 0.15;
     });
   }
 
   void _onPanEnd(DragEndDetails details) {
     final width = MediaQuery.of(context).size.width;
-    const threshold = 0.25;
+    const threshold = 0.18;
     final normalized = _offset.dx / width;
-    if (normalized.abs() > threshold) {
-      final direction = normalized.sign;
+    final velocityX = details.velocity.pixelsPerSecond.dx;
+    final hasVelocity = velocityX.abs() > 800;
+    final direction = hasVelocity
+        ? velocityX.sign
+        : (normalized.abs() > threshold ? normalized.sign : 0);
+
+    if (direction != 0) {
       final target = Offset(direction * width * 1.4, _offset.dy);
-      _animateTo(target, onCompleted: () {
-        direction > 0 ? widget.onLike() : widget.onDislike();
-        _resetPosition();
-      });
+      _animateTo(
+        target,
+        onCompleted: () {
+          direction > 0 ? widget.onLike() : widget.onDislike();
+          _resetPosition();
+        },
+      );
     } else {
       _animateTo(Offset.zero, onCompleted: _resetPosition);
     }
