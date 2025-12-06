@@ -213,6 +213,15 @@ class _CatSwipePageState extends State<CatSwipePage>
                   child: Center(
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
+                      layoutBuilder:
+                          (currentChild, previousChildren) => Stack(
+                        alignment: Alignment.center,
+                        clipBehavior: Clip.none,
+                        children: [
+                          ...previousChildren,
+                          if (currentChild != null) currentChild,
+                        ],
+                      ),
                       child: _loading
                           ? const _LoadingCard()
                           : _currentCat == null
@@ -367,128 +376,139 @@ class _CatCardState extends State<_CatCard>
     final overlayOpacity = (_offset.dx.abs() / 140).clamp(0.0, 1.0);
     final isLike = _offset.dx > 0;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(32),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        onPanUpdate: _onPanUpdate,
-        onPanEnd: _onPanEnd,
-        child: Transform.translate(
-          offset: _offset,
-          child: Transform.rotate(
-            angle: _angle,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.04),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.35),
-                    blurRadius: 24,
-                    offset: const Offset(0, 12),
-                  ),
-                ],
-              ),
-              child: Stack(
-                children: [
-                  Hero(
-                    tag: widget.cat.id,
-                    child: SizedBox(
-                      height: imageHeight,
-                      width: double.infinity,
-                      child: CachedNetworkImage(
-                        imageUrl: widget.cat.url,
-                        fit: BoxFit.cover,
-                        alignment: Alignment.center,
-                        placeholder: (context, _) => Container(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          child: const Center(
-                            child: CircularProgressIndicator.adaptive(),
-                          ),
-                        ),
-                        errorWidget: (context, _, __) => const Center(
-                          child: Icon(Icons.broken_image, color: Colors.white),
-                        ),
+    return GestureDetector(
+      onTap: widget.onTap,
+      onPanUpdate: _onPanUpdate,
+      onPanEnd: _onPanEnd,
+      child: Transform.translate(
+        offset: _offset,
+        child: Transform.rotate(
+          angle: _angle,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(32),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.04),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 24,
+                        offset: const Offset(0, 12),
                       ),
-                    ),
+                    ],
                   ),
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(32),
-                          bottomRight: Radius.circular(32),
-                        ),
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            Colors.black.withValues(alpha: 0.72),
-                            Colors.black.withValues(alpha: 0.4),
-                            Colors.transparent,
-                          ],
-                          stops: const [0, 0.45, 1],
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            breed.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            '${breed.origin} • ${breed.temperament}',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                color: Colors.white70, height: 1.4),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 120),
-                        opacity: overlayOpacity,
-                        child: Container(
-                          color: (isLike
-                                  ? const Color(0xFF16A34A)
-                                  : const Color(0xFFDC2626))
-                              .withValues(alpha: 0.22),
-                          child: Align(
-                            alignment:
-                                isLike ? Alignment.topLeft : Alignment.topRight,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Icon(
-                                isLike
-                                    ? Icons.favorite_rounded
-                                    : Icons.close_rounded,
-                                color: Colors.white,
-                                size: 38,
+                  child: Stack(
+                    children: [
+                      Hero(
+                        tag: widget.cat.id,
+                        child: SizedBox(
+                          height: imageHeight,
+                          width: double.infinity,
+                          child: CachedNetworkImage(
+                            imageUrl: widget.cat.url,
+                            fit: BoxFit.cover,
+                            alignment: Alignment.center,
+                            placeholder: (context, _) => Container(
+                              color: Colors.white.withValues(alpha: 0.05),
+                              child: const Center(
+                                child: CircularProgressIndicator.adaptive(),
                               ),
                             ),
+                            errorWidget: (context, _, __) => const Center(
+                              child:
+                                  Icon(Icons.broken_image, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(32),
+                              bottomRight: Radius.circular(32),
+                            ),
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.72),
+                                Colors.black.withValues(alpha: 0.4),
+                                Colors.transparent,
+                              ],
+                              stops: const [0, 0.45, 1],
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                breed.name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '${breed.origin} • ${breed.temperament}',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    color: Colors.white70, height: 1.4),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 120),
+                    opacity: overlayOpacity,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(32),
+                      child: Container(
+                        color: (isLike
+                                ? const Color(0xFF16A34A)
+                                : const Color(0xFFDC2626))
+                            .withValues(alpha: 0.22),
+                        child: Align(
+                          alignment:
+                              isLike ? Alignment.topLeft : Alignment.topRight,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Icon(
+                              isLike
+                                  ? Icons.favorite_rounded
+                                  : Icons.close_rounded,
+                              color: Colors.white,
+                              size: 38,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
