@@ -20,9 +20,9 @@ flutter run -d <device_id>
 
 ## Скриншоты - светлая тема
 Демонстрация - https://drive.google.com/file/d/13GMqykMPj50M2jIuq5aD4BzIi2YVwOFd/view?usp=drive_link
+![Главный экран](docs/screenshots/light/home.png)
 ![Свайп - лайк](docs/screenshots/light/like_swipe.png)
 ![Свайп - дизлайк](docs/screenshots/light/dislike_swipe.png)
-![Главный экран](docs/screenshots/light/home.png)
 ![Породы](docs/screenshots/light/types.png)
 ![Лайки](docs/screenshots/light/likes.png)
 ![Описание](docs/screenshots/light/description.png)
