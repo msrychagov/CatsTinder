@@ -16,7 +16,7 @@ flutter run -d <device_id>
 ```
 
 ## APK
-- Актуальная сборка: [docs/apk/app-release.apk](docs/apk/app-release.apk)
+- Актуальная сборка: https://drive.google.com/file/d/1_FkTodzw7BvO5FaW2tGRQgGW8UWOGDHG/view?usp=drive_link
 
 ## Скриншоты - светлая тема
 ### Демонстрация - https://drive.google.com/file/d/13GMqykMPj50M2jIuq5aD4BzIi2YVwOFd/view?usp=drive_link
