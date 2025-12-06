@@ -19,6 +19,9 @@ flutter run -d <device_id>
 - Актуальная сборка: `build/app/outputs/flutter-apk/app-release.apk`
 
 ## Скриншоты - светлая тема
+Демонстрация - https://drive.google.com/file/d/13GMqykMPj50M2jIuq5aD4BzIi2YVwOFd/view?usp=drive_link
+![Свайп - лайк](docs/screenshots/light/like_swipe.png)
+![Свайп - дизлайк](docs/screenshots/light/dislike_swipe.png)
 ![Главный экран](docs/screenshots/light/home.png)
 ![Породы](docs/screenshots/light/types.png)
 ![Лайки](docs/screenshots/light/likes.png)
@@ -26,7 +29,10 @@ flutter run -d <device_id>
 ![Описание_1](docs/screenshots/light/description1.png)
 
 ## Скриншоты - тёмная тема
+Демонстрация - https://drive.google.com/file/d/1uVKes0bO3HhJitkc_eAZumKYd02B4_9D/view?usp=drive_link
 ![Главный экран](docs/screenshots/dark/home.png)
+![Свайп - лайк](docs/screenshots/light/like_swipe.png)
+![Свайп - дизлайк](docs/screenshots/light/dislike_swipe.png)
 ![Породы](docs/screenshots/dark/types.png)
 ![Лайки](docs/screenshots/dark/likes.png)
 ![Описание](docs/screenshots/dark/description.png)
