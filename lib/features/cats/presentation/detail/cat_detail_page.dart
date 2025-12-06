@@ -15,7 +15,7 @@ class CatDetailPage extends StatelessWidget {
     final breed = cat.breed;
     final scheme = Theme.of(context).colorScheme;
     final onSurface = scheme.onSurface;
-    final muted = onSurface.withOpacity(0.7);
+    final muted = onSurface.withValues(alpha: 0.7);
     const BorderRadius heroBorder = BorderRadius.all(Radius.circular(32));
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -33,7 +33,7 @@ class CatDetailPage extends StatelessWidget {
                   imageUrl: cat.url,
                   fit: BoxFit.cover,
                   placeholder: (context, _) => Container(
-                    color: onSurface.withOpacity(0.06),
+                    color: onSurface.withValues(alpha: 0.06),
                     child: const Center(
                         child: CircularProgressIndicator.adaptive()),
                   ),
@@ -84,7 +84,7 @@ class BreedDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final onSurface = scheme.onSurface;
-    final muted = onSurface.withOpacity(0.7);
+    final muted = onSurface.withValues(alpha: 0.7);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(title: Text(breed.name)),
@@ -96,9 +96,9 @@ class BreedDetailPage extends StatelessWidget {
             child: _referenceImageUrl == null
                 ? Container(
                     height: 260,
-                    color: onSurface.withOpacity(0.06),
+                    color: onSurface.withValues(alpha: 0.06),
                     child: Icon(Icons.pets,
-                        color: onSurface.withOpacity(0.5), size: 64),
+                        color: onSurface.withValues(alpha: 0.5), size: 64),
                   )
                 : CachedNetworkImage(
                     imageUrl: _referenceImageUrl!,
@@ -106,16 +106,16 @@ class BreedDetailPage extends StatelessWidget {
                     fit: BoxFit.cover,
                     placeholder: (context, _) => Container(
                       height: 260,
-                      color: onSurface.withOpacity(0.06),
+                      color: onSurface.withValues(alpha: 0.06),
                       child: const Center(
                           child: CircularProgressIndicator.adaptive()),
                     ),
                     errorWidget: (_, __, ___) => Container(
                       height: 260,
-                      color: onSurface.withOpacity(0.06),
+                      color: onSurface.withValues(alpha: 0.06),
                       child: Icon(Icons.pets,
-                          color: onSurface.withOpacity(0.5), size: 64),
-                    ),
+                          color: onSurface.withValues(alpha: 0.5), size: 64),
+                  ),
                   ),
           ),
           const SizedBox(height: 18),

@@ -26,10 +26,10 @@ class _LikedCatsPageState extends State<LikedCatsPage>
     super.build(context);
     final scheme = Theme.of(context).colorScheme;
     final onSurface = scheme.onSurface;
-    final muted = onSurface.withOpacity(0.7);
-    final cardBg = scheme.surfaceVariant.withOpacity(0.35);
-    final cardBorder = onSurface.withOpacity(0.08);
-    final placeholder = onSurface.withOpacity(0.06);
+    final muted = onSurface.withValues(alpha: 0.7);
+    final cardBg = scheme.surfaceContainerHighest.withValues(alpha: 0.35);
+    final cardBorder = onSurface.withValues(alpha: 0.08);
+    final placeholder = onSurface.withValues(alpha: 0.06);
     final liked = widget.likedCats.reversed.toList();
     if (liked.isEmpty) {
       return Stack(

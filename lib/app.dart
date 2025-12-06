@@ -33,11 +33,13 @@ class _MyAppState extends State<MyApp> {
       title: 'Кототиндер',
       debugShowCheckedModeBanner: false,
       themeMode: _mode,
+      themeAnimationDuration: Duration.zero,
+      themeAnimationCurve: Curves.linear,
       theme: ThemeData(
         colorScheme:
             ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.light)
                 .copyWith(
-          surfaceVariant: const Color(0xFFE6E9F2),
+          surfaceContainerHighest: const Color(0xFFE6E9F2),
         ),
         scaffoldBackgroundColor: const Color(0xFFF7F8FC),
         textTheme: lightText,

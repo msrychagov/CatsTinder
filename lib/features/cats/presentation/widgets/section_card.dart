@@ -10,9 +10,9 @@ class SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final onSurface = scheme.onSurface;
-    final border = onSurface.withOpacity(0.1);
-    final bg = scheme.surfaceVariant.withOpacity(
-        scheme.brightness == Brightness.dark ? 0.06 : 0.5);
+    final border = onSurface.withValues(alpha: 0.1);
+    final bg = scheme.surfaceContainerHighest.withValues(
+        alpha: scheme.brightness == Brightness.dark ? 0.06 : 0.5);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -45,7 +45,7 @@ class Meter extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final active = scheme.primary;
-    final inactive = scheme.onSurface.withOpacity(0.24);
+    final inactive = scheme.onSurface.withValues(alpha: 0.24);
     return Row(
       children: List.generate(
         5,

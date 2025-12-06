@@ -67,11 +67,6 @@ class _BreedListPageState extends State<BreedListPage>
   Widget build(BuildContext context) {
     super.build(context);
     final scheme = Theme.of(context).colorScheme;
-    final onSurface = scheme.onSurface;
-    final muted = onSurface.withOpacity(0.7);
-    final cardBg = scheme.surfaceVariant.withOpacity(0.35);
-    final cardBorder = onSurface.withOpacity(0.08);
-    final placeholder = onSurface.withOpacity(0.04);
     return Stack(
       children: [
         const BackgroundGradient(),
@@ -136,6 +131,12 @@ class _BreedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final onSurface = scheme.onSurface;
+    final muted = onSurface.withValues(alpha: 0.7);
+    final cardBg = scheme.surfaceContainerHighest.withValues(alpha: 0.35);
+    final cardBorder = onSurface.withValues(alpha: 0.08);
+    final placeholder = onSurface.withValues(alpha: 0.04);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
@@ -158,8 +159,8 @@ class _BreedCard extends StatelessWidget {
                 child: _referenceImageUrl == null
                     ? Container(
                         color: placeholder,
-                        child:
-                            Icon(Icons.pets, color: onSurface.withOpacity(0.5)),
+                        child: Icon(Icons.pets,
+                            color: onSurface.withValues(alpha: 0.5)),
                       )
                     : CachedNetworkImage(
                         imageUrl: _referenceImageUrl!,
@@ -170,7 +171,7 @@ class _BreedCard extends StatelessWidget {
                               child: CircularProgressIndicator.adaptive()),
                         ),
                         errorWidget: (_, __, ___) =>
-                            Icon(Icons.pets, color: onSurface.withOpacity(0.5)),
+                            Icon(Icons.pets, color: onSurface.withValues(alpha: 0.5)),
                       ),
               ),
             ),
@@ -209,7 +210,7 @@ class _BreedCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: Icon(Icons.arrow_forward_ios_rounded,
-                  color: onSurface.withOpacity(0.54), size: 18),
+                  color: onSurface.withValues(alpha: 0.54), size: 18),
             ),
           ],
         ),
@@ -228,7 +229,7 @@ class _ErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final onSurface = scheme.onSurface;
-    final muted = onSurface.withOpacity(0.7);
+    final muted = onSurface.withValues(alpha: 0.7);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,

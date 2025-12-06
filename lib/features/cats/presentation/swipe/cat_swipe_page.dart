@@ -177,7 +177,7 @@ class _CatSwipePageState extends State<CatSwipePage>
                       child: _ActionButton(
                         label: 'Дизлайк',
                         icon: Icons.close_rounded,
-                        color: onSurface.withOpacity(0.08),
+                        color: onSurface.withValues(alpha: 0.08),
                         textColor: onSurface,
                         onPressed: _dislike,
                         elevation: 1,
@@ -312,13 +312,26 @@ class _CatCardState extends State<_CatCard>
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final onSurface = scheme.onSurface;
-    final muted = onSurface.withValues(alpha: 0.7);
-    final cardBg = scheme.surfaceVariant.withValues(alpha: 0.35);
+    final cardBg = scheme.surfaceContainerHighest.withValues(alpha: 0.35);
     final cardBorder = onSurface.withValues(alpha: 0.08);
     final shadowColor =
         (scheme.brightness == Brightness.dark ? Colors.black : Colors.black54)
             .withValues(alpha: 0.35);
     final placeholderColor = onSurface.withValues(alpha: 0.05);
+    final isDark = scheme.brightness == Brightness.dark;
+    const infoText = Colors.white;
+    final infoMuted = Colors.white.withValues(alpha: 0.8);
+    final gradientColors = isDark
+        ? [
+            Colors.black.withValues(alpha: 0.72),
+            Colors.black.withValues(alpha: 0.4),
+            Colors.transparent,
+          ]
+        : [
+            Colors.black.withValues(alpha: 0.78),
+            Colors.black.withValues(alpha: 0.46),
+            Colors.transparent,
+          ];
     final breed = widget.cat.breed;
     final imageHeight = min(MediaQuery.of(context).size.height * 0.55, 520.0);
     final overlayOpacity = (_offset.dx.abs() / 140).clamp(0.0, 1.0);
@@ -396,11 +409,7 @@ class _CatCardState extends State<_CatCard>
                                 gradient: LinearGradient(
                                   begin: Alignment.bottomCenter,
                                   end: Alignment.topCenter,
-                                  colors: [
-                                    Colors.black.withValues(alpha: 0.72),
-                                    Colors.black.withValues(alpha: 0.4),
-                                    Colors.transparent,
-                                  ],
+                                  colors: gradientColors,
                                   stops: const [0, 0.45, 1],
                                 ),
                               ),
@@ -408,24 +417,27 @@ class _CatCardState extends State<_CatCard>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                Text(
-                                  breed.name,
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w800,
+                                  Text(
+                                    breed.name,
+                                    style: const TextStyle(
+                                      color: infoText,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  '${breed.origin} • ${breed.temperament}',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style:
-                                      TextStyle(color: muted, height: 1.4),
-                                ),
-                              ],
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '${breed.origin} • ${breed.temperament}',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: infoMuted,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
                           ),
                         ),
                       ),
@@ -581,9 +593,9 @@ class _SkeletonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final onSurface = scheme.onSurface;
-    final muted = onSurface.withOpacity(0.7);
-    final bg = onSurface.withOpacity(0.04);
-    final border = onSurface.withOpacity(0.08);
+    final muted = onSurface.withValues(alpha: 0.7);
+    final bg = onSurface.withValues(alpha: 0.04);
+    final border = onSurface.withValues(alpha: 0.08);
     return Container(
       height: 420,
       width: double.infinity,
