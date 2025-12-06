@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -47,12 +48,30 @@ class CatHome extends StatefulWidget {
 }
 
 class _CatHomeState extends State<CatHome> {
+  final LikesStorage _storage = LikesStorage();
   final List<CatImage> _likedCats = [];
 
   void _addLike(CatImage cat) {
     final exists = _likedCats.any((c) => c.id == cat.id);
     if (exists) return;
     setState(() => _likedCats.add(cat));
+    _storage.saveLikes(_likedCats);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _restoreLikes();
+  }
+
+  Future<void> _restoreLikes() async {
+    final saved = await _storage.loadLikes();
+    if (!mounted || saved.isEmpty) return;
+    setState(() {
+      _likedCats
+        ..clear()
+        ..addAll(saved);
+    });
   }
 
   @override
@@ -113,6 +132,7 @@ class _CatSwipePageState extends State<CatSwipePage>
   CatImage? _currentCat;
   bool _loading = false;
   bool _errorVisible = false;
+  bool _cardInfoVisible = true;
 
   @override
   void initState() {
@@ -153,9 +173,15 @@ class _CatSwipePageState extends State<CatSwipePage>
   void _openDetail() {
     final cat = _currentCat;
     if (cat == null) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => CatDetailPage(cat: cat)),
-    );
+    setState(() => _cardInfoVisible = false);
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(builder: (_) => CatDetailPage(cat: cat)),
+        )
+        .whenComplete(() {
+      if (!mounted) return;
+      setState(() => _cardInfoVisible = true);
+    });
   }
 
   Future<void> _showErrorDialog(String message) async {
@@ -232,6 +258,7 @@ class _CatSwipePageState extends State<CatSwipePage>
                                   onTap: _openDetail,
                                   onLike: _like,
                                   onDislike: _dislike,
+                                  showInfo: _cardInfoVisible,
                                 ),
                     ),
                   ),
@@ -281,12 +308,14 @@ class _CatCard extends StatefulWidget {
     required this.onLike,
     required this.onDislike,
     required this.onTap,
+    this.showInfo = true,
   });
 
   final CatImage cat;
   final VoidCallback onLike;
   final VoidCallback onDislike;
   final VoidCallback onTap;
+  final bool showInfo;
 
   @override
   State<_CatCard> createState() => _CatCardState();
@@ -294,6 +323,9 @@ class _CatCard extends StatefulWidget {
 
 class _CatCardState extends State<_CatCard>
     with SingleTickerProviderStateMixin {
+  static const double _heroRadius = 32;
+  static const BorderRadius _heroBorderRadius =
+      BorderRadius.all(Radius.circular(_heroRadius));
   late final AnimationController _controller = AnimationController(
       vsync: this, duration: const Duration(milliseconds: 250))
     ..addListener(_onAnimate);
@@ -387,42 +419,44 @@ class _CatCardState extends State<_CatCard>
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(32),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.04),
-                    border:
-                        Border.all(color: Colors.white.withValues(alpha: 0.08)),
-                    borderRadius: BorderRadius.circular(32),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.35),
-                        blurRadius: 24,
-                        offset: const Offset(0, 12),
-                      ),
-                    ],
-                  ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.04),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                  borderRadius: _heroBorderRadius,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: _heroBorderRadius,
                   child: Stack(
                     children: [
                       Hero(
                         tag: widget.cat.id,
-                        child: SizedBox(
-                          height: imageHeight,
-                          width: double.infinity,
-                          child: CachedNetworkImage(
-                            imageUrl: widget.cat.url,
-                            fit: BoxFit.cover,
-                            alignment: Alignment.center,
-                            placeholder: (context, _) => Container(
-                              color: Colors.white.withValues(alpha: 0.05),
-                              child: const Center(
-                                child: CircularProgressIndicator.adaptive(),
+                        child: ClipRRect(
+                          borderRadius: _heroBorderRadius,
+                          child: SizedBox(
+                            height: imageHeight,
+                            width: double.infinity,
+                            child: CachedNetworkImage(
+                              imageUrl: widget.cat.url,
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              placeholder: (context, _) => Container(
+                                color: Colors.white.withValues(alpha: 0.05),
+                                child: const Center(
+                                  child: CircularProgressIndicator.adaptive(),
+                                ),
                               ),
-                            ),
-                            errorWidget: (context, _, __) => const Center(
-                              child:
-                                  Icon(Icons.broken_image, color: Colors.white),
+                              errorWidget: (context, _, __) => const Center(
+                                child: Icon(Icons.broken_image,
+                                    color: Colors.white),
+                              ),
                             ),
                           ),
                         ),
@@ -431,45 +465,52 @@ class _CatCardState extends State<_CatCard>
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(32),
-                              bottomRight: Radius.circular(32),
-                            ),
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Colors.black.withValues(alpha: 0.72),
-                                Colors.black.withValues(alpha: 0.4),
-                                Colors.transparent,
-                              ],
-                              stops: const [0, 0.45, 1],
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                breed.name,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w800,
+                        child: IgnorePointer(
+                          ignoring: !widget.showInfo,
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 180),
+                            opacity: widget.showInfo ? 1 : 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.only(
+                                  bottomLeft: Radius.circular(_heroRadius),
+                                  bottomRight: Radius.circular(_heroRadius),
+                                ),
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [
+                                    Colors.black.withValues(alpha: 0.72),
+                                    Colors.black.withValues(alpha: 0.4),
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0, 0.45, 1],
                                 ),
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                '${breed.origin} • ${breed.temperament}',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    color: Colors.white70, height: 1.4),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    breed.name,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '${breed.origin} • ${breed.temperament}',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        color: Colors.white70, height: 1.4),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -483,7 +524,7 @@ class _CatCardState extends State<_CatCard>
                     duration: const Duration(milliseconds: 120),
                     opacity: overlayOpacity,
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(32),
+                      borderRadius: _heroBorderRadius,
                       child: Container(
                         color: (isLike
                                 ? const Color(0xFF16A34A)
@@ -965,6 +1006,7 @@ class CatDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final breed = cat.breed;
+    const BorderRadius heroBorder = BorderRadius.all(Radius.circular(32));
     return Scaffold(
       backgroundColor: const Color(0xFF0B1220),
       appBar: AppBar(title: Text(breed.name)),
@@ -974,7 +1016,7 @@ class CatDetailPage extends StatelessWidget {
           Hero(
             tag: cat.id,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: heroBorder,
               child: AspectRatio(
                 aspectRatio: cat.aspectRatio ?? 4 / 5,
                 child: CachedNetworkImage(
@@ -1251,12 +1293,13 @@ class CatImage {
     }
     final width = (json['width'] as num?)?.toDouble();
     final height = (json['height'] as num?)?.toDouble();
+    final aspect = (json['aspectRatio'] as num?)?.toDouble();
     return CatImage(
       id: json['id'] as String? ?? json['url'] as String? ?? 'cat',
       url: json['url'] as String? ?? '',
       breed: Breed.fromJson(breeds.first as Map<String, dynamic>),
-      aspectRatio:
-          width != null && height != null && height > 0 ? width / height : null,
+      aspectRatio: aspect ??
+          (width != null && height != null && height > 0 ? width / height : null),
     );
   }
 
@@ -1264,6 +1307,13 @@ class CatImage {
   final String url;
   final Breed breed;
   final double? aspectRatio;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'url': url,
+        'breeds': [breed.toJson()],
+        if (aspectRatio != null) 'aspectRatio': aspectRatio,
+      };
 }
 
 class CatApiException implements Exception {
@@ -1319,6 +1369,20 @@ class Breed {
   final String? referenceImageId;
 
   String get shortInfo => temperament;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'description': description,
+        'origin': origin,
+        'life_span': lifeSpan,
+        'temperament': temperament,
+        'energy_level': energyLevel,
+        'affection_level': affectionLevel,
+        'intelligence': intelligence,
+        'social_needs': socialNeeds,
+        'reference_image_id': referenceImageId,
+      };
 }
 
 class CatApiService {
@@ -1394,5 +1458,30 @@ class CatApiService {
       aspectRatio:
           width != null && height != null && height > 0 ? width / height : null,
     );
+  }
+}
+
+class LikesStorage {
+  static const _key = 'liked_cats';
+
+  Future<List<CatImage>> loadLikes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_key);
+    if (raw == null || raw.isEmpty) return [];
+    try {
+      final data = json.decode(raw) as List<dynamic>;
+      return data
+          .map((e) => CatImage.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> saveLikes(List<CatImage> cats) async {
+    final prefs = await SharedPreferences.getInstance();
+    final encoded =
+        json.encode(cats.map((cat) => cat.toJson()).toList(growable: false));
+    await prefs.setString(_key, encoded);
   }
 }
