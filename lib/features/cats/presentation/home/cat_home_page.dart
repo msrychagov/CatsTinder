@@ -33,6 +33,11 @@ class _CatHomePageState extends State<CatHomePage> {
     _storage.saveLikes(_likedCats);
   }
 
+  void _removeLike(CatImage cat) {
+    setState(() => _likedCats.removeWhere((c) => c.id == cat.id));
+    _storage.saveLikes(_likedCats);
+  }
+
   Future<void> _restoreLikes() async {
     final saved = await _storage.loadLikes();
     if (!mounted || saved.isEmpty) return;
@@ -72,7 +77,10 @@ class _CatHomePageState extends State<CatHomePage> {
               onLike: _addLike,
             ),
             BreedListPage(service: widget.service),
-            LikedCatsPage(likedCats: _likedCats),
+            LikedCatsPage(
+              likedCats: _likedCats,
+              onRemove: _removeLike,
+            ),
           ],
         ),
       ),

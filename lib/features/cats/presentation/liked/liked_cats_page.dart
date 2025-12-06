@@ -6,9 +6,14 @@ import '../detail/cat_detail_page.dart';
 import '../widgets/background_gradient.dart';
 
 class LikedCatsPage extends StatefulWidget {
-  const LikedCatsPage({super.key, required this.likedCats});
+  const LikedCatsPage({
+    super.key,
+    required this.likedCats,
+    required this.onRemove,
+  });
 
   final List<CatImage> likedCats;
+  final ValueChanged<CatImage> onRemove;
 
   @override
   State<LikedCatsPage> createState() => _LikedCatsPageState();
@@ -40,7 +45,16 @@ class _LikedCatsPageState extends State<LikedCatsPage>
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           itemBuilder: (context, index) {
             final cat = liked[index];
-            return _LikedCard(cat: cat);
+            return Dismissible(
+              key: ValueKey(cat.id),
+              direction: DismissDirection.endToStart,
+              background: _DismissBackground(),
+              onDismissed: (_) => widget.onRemove(cat),
+              child: _LikedCard(
+                cat: cat,
+                onRemove: () => widget.onRemove(cat),
+              ),
+            );
           },
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemCount: liked.length,
@@ -54,9 +68,10 @@ class _LikedCatsPageState extends State<LikedCatsPage>
 }
 
 class _LikedCard extends StatelessWidget {
-  const _LikedCard({required this.cat});
+  const _LikedCard({required this.cat, required this.onRemove});
 
   final CatImage cat;
+  final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -74,52 +89,84 @@ class _LikedCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-              child: AspectRatio(
-                aspectRatio: cat.aspectRatio ?? 4 / 5,
-                child: CachedNetworkImage(
-                  imageUrl: cat.url,
-                  fit: BoxFit.cover,
-                  placeholder: (context, _) => Container(
-                    color: Colors.white.withValues(alpha: 0.06),
-                    child: const Center(
-                        child: CircularProgressIndicator.adaptive()),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  child: AspectRatio(
+                    aspectRatio: cat.aspectRatio ?? 4 / 5,
+                    child: CachedNetworkImage(
+                      imageUrl: cat.url,
+                      fit: BoxFit.cover,
+                      placeholder: (context, _) => Container(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        child: const Center(
+                            child: CircularProgressIndicator.adaptive()),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        breed.name,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${breed.origin} • ${breed.temperament}',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            const TextStyle(color: Colors.white70, height: 1.4),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    breed.name,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${breed.origin} • ${breed.temperament}',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white70, height: 1.4),
-                  ),
-                ],
+            Positioned(
+              top: 6,
+              right: 6,
+              child: IconButton(
+                visualDensity: VisualDensity.compact,
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black.withValues(alpha: 0.35),
+                ),
+                icon: const Icon(Icons.delete_outline, color: Colors.white),
+                onPressed: onRemove,
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _DismissBackground extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFDC2626).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: const Icon(Icons.delete_rounded, color: Colors.white),
     );
   }
 }
