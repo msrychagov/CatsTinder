@@ -8,9 +8,16 @@ import '../liked/liked_cats_page.dart';
 import '../swipe/cat_swipe_page.dart';
 
 class CatHomePage extends StatefulWidget {
-  const CatHomePage({super.key, required this.service});
+  const CatHomePage({
+    super.key,
+    required this.service,
+    required this.onToggleTheme,
+    required this.isDarkMode,
+  });
 
   final CatApiService service;
+  final VoidCallback onToggleTheme;
+  final bool isDarkMode;
 
   @override
   State<CatHomePage> createState() => _CatHomePageState();
@@ -58,6 +65,14 @@ class _CatHomePageState extends State<CatHomePage> {
             'Кототиндер',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 24),
           ),
+          actions: [
+            IconButton(
+              icon: Icon(
+                widget.isDarkMode ? Icons.wb_sunny_outlined : Icons.nights_stay,
+              ),
+              onPressed: widget.onToggleTheme,
+            ),
+          ],
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Лента'),

@@ -24,15 +24,21 @@ class _LikedCatsPageState extends State<LikedCatsPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final scheme = Theme.of(context).colorScheme;
+    final onSurface = scheme.onSurface;
+    final muted = onSurface.withOpacity(0.7);
+    final cardBg = scheme.surfaceVariant.withOpacity(0.35);
+    final cardBorder = onSurface.withOpacity(0.08);
+    final placeholder = onSurface.withOpacity(0.06);
     final liked = widget.likedCats.reversed.toList();
     if (liked.isEmpty) {
-      return const Stack(
+      return Stack(
         children: [
-          BackgroundGradient(),
+          const BackgroundGradient(),
           Center(
             child: Text(
               'Пока нет лайкнутых котиков',
-              style: TextStyle(color: Colors.white70),
+              style: TextStyle(color: muted),
             ),
           ),
         ],
@@ -48,11 +54,16 @@ class _LikedCatsPageState extends State<LikedCatsPage>
             return Dismissible(
               key: ValueKey(cat.id),
               direction: DismissDirection.endToStart,
-              background: _DismissBackground(),
+              background: _DismissBackground(color: scheme.error),
               onDismissed: (_) => widget.onRemove(cat),
               child: _LikedCard(
                 cat: cat,
                 onRemove: () => widget.onRemove(cat),
+                bg: cardBg,
+                border: cardBorder,
+                placeholder: placeholder,
+                textColor: onSurface,
+                mutedColor: muted,
               ),
             );
           },
@@ -68,10 +79,23 @@ class _LikedCatsPageState extends State<LikedCatsPage>
 }
 
 class _LikedCard extends StatelessWidget {
-  const _LikedCard({required this.cat, required this.onRemove});
+  const _LikedCard({
+    required this.cat,
+    required this.onRemove,
+    required this.bg,
+    required this.border,
+    required this.placeholder,
+    required this.textColor,
+    required this.mutedColor,
+  });
 
   final CatImage cat;
   final VoidCallback onRemove;
+  final Color bg;
+  final Color border;
+  final Color placeholder;
+  final Color textColor;
+  final Color mutedColor;
 
   @override
   Widget build(BuildContext context) {
@@ -85,9 +109,9 @@ class _LikedCard extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
+          color: bg,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          border: Border.all(color: border),
         ),
         child: Stack(
           children: [
@@ -105,7 +129,7 @@ class _LikedCard extends StatelessWidget {
                       imageUrl: cat.url,
                       fit: BoxFit.cover,
                       placeholder: (context, _) => Container(
-                        color: Colors.white.withValues(alpha: 0.06),
+                        color: placeholder,
                         child: const Center(
                             child: CircularProgressIndicator.adaptive()),
                       ),
@@ -119,8 +143,8 @@ class _LikedCard extends StatelessWidget {
                     children: [
                       Text(
                         breed.name,
-                        style: const TextStyle(
-                            color: Colors.white,
+                        style: TextStyle(
+                            color: textColor,
                             fontSize: 18,
                             fontWeight: FontWeight.w800),
                       ),
@@ -129,8 +153,7 @@ class _LikedCard extends StatelessWidget {
                         '${breed.origin} • ${breed.temperament}',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style:
-                            const TextStyle(color: Colors.white70, height: 1.4),
+                        style: TextStyle(color: mutedColor, height: 1.4),
                       ),
                     ],
                   ),
@@ -145,7 +168,7 @@ class _LikedCard extends StatelessWidget {
                 style: IconButton.styleFrom(
                   backgroundColor: Colors.black.withValues(alpha: 0.35),
                 ),
-                icon: const Icon(Icons.delete_outline, color: Colors.white),
+                icon: Icon(Icons.delete_outline, color: textColor),
                 onPressed: onRemove,
               ),
             ),
@@ -157,13 +180,17 @@ class _LikedCard extends StatelessWidget {
 }
 
 class _DismissBackground extends StatelessWidget {
+  const _DismissBackground({required this.color});
+
+  final Color color;
+
   @override
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.centerRight,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: const Color(0xFFDC2626).withValues(alpha: 0.8),
+        color: color.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20),
       ),
       child: const Icon(Icons.delete_rounded, color: Colors.white),

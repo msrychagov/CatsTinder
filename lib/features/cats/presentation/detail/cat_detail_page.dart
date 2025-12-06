@@ -13,9 +13,12 @@ class CatDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final breed = cat.breed;
+    final scheme = Theme.of(context).colorScheme;
+    final onSurface = scheme.onSurface;
+    final muted = onSurface.withOpacity(0.7);
     const BorderRadius heroBorder = BorderRadius.all(Radius.circular(32));
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1220),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(title: Text(breed.name)),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -30,7 +33,7 @@ class CatDetailPage extends StatelessWidget {
                   imageUrl: cat.url,
                   fit: BoxFit.cover,
                   placeholder: (context, _) => Container(
-                    color: Colors.white.withValues(alpha: 0.06),
+                    color: onSurface.withOpacity(0.06),
                     child: const Center(
                         child: CircularProgressIndicator.adaptive()),
                   ),
@@ -41,20 +44,20 @@ class CatDetailPage extends StatelessWidget {
           const SizedBox(height: 18),
           Text(
             breed.name,
-            style: const TextStyle(
-                color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800),
+            style: TextStyle(
+                color: onSurface, fontSize: 26, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 8),
           Text(
             '${breed.origin} • ${breed.temperament}',
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(color: muted),
           ),
           const SizedBox(height: 16),
           SectionCard(
             title: 'Описание',
             child: Text(
               breed.description,
-              style: const TextStyle(color: Colors.white70, height: 1.5),
+              style: TextStyle(color: muted, height: 1.5),
             ),
           ),
           const SizedBox(height: 12),
@@ -79,8 +82,11 @@ class BreedDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final onSurface = scheme.onSurface;
+    final muted = onSurface.withOpacity(0.7);
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1220),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(title: Text(breed.name)),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -90,9 +96,9 @@ class BreedDetailPage extends StatelessWidget {
             child: _referenceImageUrl == null
                 ? Container(
                     height: 260,
-                    color: Colors.white.withValues(alpha: 0.06),
-                    child:
-                        const Icon(Icons.pets, color: Colors.white54, size: 64),
+                    color: onSurface.withOpacity(0.06),
+                    child: Icon(Icons.pets,
+                        color: onSurface.withOpacity(0.5), size: 64),
                   )
                 : CachedNetworkImage(
                     imageUrl: _referenceImageUrl!,
@@ -100,35 +106,35 @@ class BreedDetailPage extends StatelessWidget {
                     fit: BoxFit.cover,
                     placeholder: (context, _) => Container(
                       height: 260,
-                      color: Colors.white.withValues(alpha: 0.06),
+                      color: onSurface.withOpacity(0.06),
                       child: const Center(
                           child: CircularProgressIndicator.adaptive()),
                     ),
                     errorWidget: (_, __, ___) => Container(
                       height: 260,
-                      color: Colors.white.withValues(alpha: 0.06),
-                      child: const Icon(Icons.pets,
-                          color: Colors.white54, size: 64),
+                      color: onSurface.withOpacity(0.06),
+                      child: Icon(Icons.pets,
+                          color: onSurface.withOpacity(0.5), size: 64),
                     ),
                   ),
           ),
           const SizedBox(height: 18),
           Text(
             breed.name,
-            style: const TextStyle(
-                color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800),
+            style: TextStyle(
+                color: onSurface, fontSize: 26, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 8),
           Text(
             '${breed.origin} • ${breed.lifeSpan} лет жизни',
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(color: muted),
           ),
           const SizedBox(height: 16),
           SectionCard(
             title: 'Описание',
             child: Text(
               breed.description,
-              style: const TextStyle(color: Colors.white70, height: 1.5),
+              style: TextStyle(color: muted, height: 1.5),
             ),
           ),
           const SizedBox(height: 12),

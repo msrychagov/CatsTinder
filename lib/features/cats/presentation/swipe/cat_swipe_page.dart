@@ -112,6 +112,11 @@ class _CatSwipePageState extends State<CatSwipePage>
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final onSurface = scheme.onSurface;
+    final muted = onSurface.withValues(alpha: 0.7);
+    final pillBg = onSurface.withValues(alpha: 0.12);
+    final pillBorder = onSurface.withValues(alpha: 0.18);
     super.build(context);
     return Stack(
       children: [
@@ -124,11 +129,16 @@ class _CatSwipePageState extends State<CatSwipePage>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Свайпай котиков',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      style: TextStyle(color: muted, fontSize: 14),
                     ),
-                    _LikesPill(likes: widget.likedCats.length),
+                    _LikesPill(
+                      likes: widget.likedCats.length,
+                      bg: pillBg,
+                      border: pillBorder,
+                      textColor: onSurface,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -167,8 +177,8 @@ class _CatSwipePageState extends State<CatSwipePage>
                       child: _ActionButton(
                         label: 'Дизлайк',
                         icon: Icons.close_rounded,
-                        color: Colors.white12,
-                        textColor: Colors.white,
+                        color: onSurface.withOpacity(0.08),
+                        textColor: onSurface,
                         onPressed: _dislike,
                         elevation: 1,
                       ),
@@ -300,6 +310,15 @@ class _CatCardState extends State<_CatCard>
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final onSurface = scheme.onSurface;
+    final muted = onSurface.withValues(alpha: 0.7);
+    final cardBg = scheme.surfaceVariant.withValues(alpha: 0.35);
+    final cardBorder = onSurface.withValues(alpha: 0.08);
+    final shadowColor =
+        (scheme.brightness == Brightness.dark ? Colors.black : Colors.black54)
+            .withValues(alpha: 0.35);
+    final placeholderColor = onSurface.withValues(alpha: 0.05);
     final breed = widget.cat.breed;
     final imageHeight = min(MediaQuery.of(context).size.height * 0.55, 520.0);
     final overlayOpacity = (_offset.dx.abs() / 140).clamp(0.0, 1.0);
@@ -318,12 +337,12 @@ class _CatCardState extends State<_CatCard>
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.04),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                  color: cardBg,
+                  border: Border.all(color: cardBorder),
                   borderRadius: _heroBorderRadius,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.35),
+                      color: shadowColor,
                       blurRadius: 24,
                       offset: const Offset(0, 12),
                     ),
@@ -345,14 +364,14 @@ class _CatCardState extends State<_CatCard>
                               fit: BoxFit.cover,
                               alignment: Alignment.center,
                               placeholder: (context, _) => Container(
-                                color: Colors.white.withValues(alpha: 0.05),
+                                color: placeholderColor,
                                 child: const Center(
                                   child: CircularProgressIndicator.adaptive(),
                                 ),
                               ),
                               errorWidget: (context, _, __) => const Center(
                                 child: Icon(Icons.broken_image,
-                                    color: Colors.white),
+                                    color: Colors.redAccent),
                               ),
                             ),
                           ),
@@ -389,25 +408,24 @@ class _CatCardState extends State<_CatCard>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    breed.name,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                                Text(
+                                  breed.name,
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w800,
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    '${breed.origin} • ${breed.temperament}',
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                        color: Colors.white70, height: 1.4),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  '${breed.origin} • ${breed.temperament}',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style:
+                                      TextStyle(color: muted, height: 1.4),
+                                ),
+                              ],
                             ),
+                          ),
                           ),
                         ),
                       ),
@@ -455,18 +473,25 @@ class _CatCardState extends State<_CatCard>
 }
 
 class _LikesPill extends StatelessWidget {
-  const _LikesPill({required this.likes});
+  const _LikesPill(
+      {required this.likes,
+      required this.bg,
+      required this.border,
+      required this.textColor});
 
   final int likes;
+  final Color bg;
+  final Color border;
+  final Color textColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: bg,
         borderRadius: BorderRadius.circular(40),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        border: Border.all(color: border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -476,8 +501,8 @@ class _LikesPill extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             '$likes',
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: textColor,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -541,7 +566,7 @@ class _PlaceholderCard extends StatelessWidget {
     return const _SkeletonCard(
       child: Text(
         'Тут будет котик',
-        style: TextStyle(color: Colors.white70),
+        style: TextStyle(),
       ),
     );
   }
@@ -554,16 +579,24 @@ class _SkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final onSurface = scheme.onSurface;
+    final muted = onSurface.withOpacity(0.7);
+    final bg = onSurface.withOpacity(0.04);
+    final border = onSurface.withOpacity(0.08);
     return Container(
       height: 420,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
+        color: bg,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: border),
       ),
       child: Center(
-        child: child ?? const CircularProgressIndicator.adaptive(),
+        child: child ??
+            CircularProgressIndicator.adaptive(
+              valueColor: AlwaysStoppedAnimation<Color>(muted),
+            ),
       ),
     );
   }

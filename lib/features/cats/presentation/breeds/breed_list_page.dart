@@ -66,6 +66,12 @@ class _BreedListPageState extends State<BreedListPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final scheme = Theme.of(context).colorScheme;
+    final onSurface = scheme.onSurface;
+    final muted = onSurface.withOpacity(0.7);
+    final cardBg = scheme.surfaceVariant.withOpacity(0.35);
+    final cardBorder = onSurface.withOpacity(0.08);
+    final placeholder = onSurface.withOpacity(0.04);
     return Stack(
       children: [
         const BackgroundGradient(),
@@ -85,7 +91,7 @@ class _BreedListPageState extends State<BreedListPage>
             final breeds = snapshot.data ?? [];
             return RefreshIndicator(
               color: Theme.of(context).colorScheme.primary,
-              backgroundColor: Colors.white,
+              backgroundColor: scheme.surface,
               onRefresh: _reload,
               child: ListView.separated(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -135,9 +141,9 @@ class _BreedCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
+          color: cardBg,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          border: Border.all(color: cardBorder),
         ),
         child: Row(
           children: [
@@ -151,19 +157,20 @@ class _BreedCard extends StatelessWidget {
                 height: 110,
                 child: _referenceImageUrl == null
                     ? Container(
-                        color: Colors.white.withValues(alpha: 0.04),
-                        child: const Icon(Icons.pets, color: Colors.white54),
+                        color: placeholder,
+                        child:
+                            Icon(Icons.pets, color: onSurface.withOpacity(0.5)),
                       )
                     : CachedNetworkImage(
                         imageUrl: _referenceImageUrl!,
                         fit: BoxFit.cover,
                         placeholder: (context, _) => Container(
-                          color: Colors.white.withValues(alpha: 0.04),
+                          color: placeholder,
                           child: const Center(
                               child: CircularProgressIndicator.adaptive()),
                         ),
                         errorWidget: (_, __, ___) =>
-                            const Icon(Icons.pets, color: Colors.white54),
+                            Icon(Icons.pets, color: onSurface.withOpacity(0.5)),
                       ),
               ),
             ),
@@ -177,8 +184,8 @@ class _BreedCard extends StatelessWidget {
                   children: [
                     Text(
                       breed.name,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
                       ),
@@ -186,25 +193,23 @@ class _BreedCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       '${breed.origin} • ${breed.lifeSpan} лет',
-                      style:
-                          const TextStyle(color: Colors.white70, fontSize: 12),
+                      style: TextStyle(color: muted, fontSize: 12),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       breed.shortInfo,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style:
-                          const TextStyle(color: Colors.white70, height: 1.4),
+                      style: TextStyle(color: muted, height: 1.4),
                     ),
                   ],
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.only(right: 12),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
               child: Icon(Icons.arrow_forward_ios_rounded,
-                  color: Colors.white54, size: 18),
+                  color: onSurface.withOpacity(0.54), size: 18),
             ),
           ],
         ),
@@ -221,13 +226,16 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final onSurface = scheme.onSurface;
+    final muted = onSurface.withOpacity(0.7);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.wifi_off_rounded, color: Colors.white54, size: 48),
+          Icon(Icons.wifi_off_rounded, color: muted, size: 48),
           const SizedBox(height: 12),
-          Text(message, style: const TextStyle(color: Colors.white70)),
+          Text(message, style: TextStyle(color: muted)),
           const SizedBox(height: 8),
           TextButton(
             onPressed: onRetry,

@@ -8,20 +8,25 @@ class SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final onSurface = scheme.onSurface;
+    final border = onSurface.withOpacity(0.1);
+    final bg = scheme.surfaceVariant.withOpacity(
+        scheme.brightness == Brightness.dark ? 0.06 : 0.5);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
+        color: bg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w700),
+            style:
+                TextStyle(color: onSurface, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           child,
@@ -38,6 +43,9 @@ class Meter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final active = scheme.primary;
+    final inactive = scheme.onSurface.withOpacity(0.24);
     return Row(
       children: List.generate(
         5,
@@ -46,9 +54,7 @@ class Meter extends StatelessWidget {
             margin: EdgeInsets.only(right: index == 4 ? 0 : 6),
             height: 12,
             decoration: BoxDecoration(
-              color: index < level
-                  ? Theme.of(context).colorScheme.primary
-                  : Colors.white24,
+              color: index < level ? active : inactive,
               borderRadius: BorderRadius.circular(6),
             ),
           ),
