@@ -18,8 +18,19 @@ flutter run -d <device_id>
 ## APK
 - Актуальная сборка: `build/app/outputs/flutter-apk/app-release.apk`
 
-## Скриншоты
-![Главный экран](docs/screenshots/home.png)
+## Скриншоты - светлая тема
+![Главный экран](docs/screenshots/light/home.png)
+![Породы](docs/screenshots/light/types.png)
+![Лайки](docs/screenshots/light/likes.png)
+![Описание](docs/screenshots/light/description.png)
+![Описание_1](docs/screenshots/light/description1.png)
+
+## Скриншоты - тёмная тема
+![Главный экран](docs/screenshots/dark/home.png)
+![Породы](docs/screenshots/dark/types.png)
+![Лайки](docs/screenshots/dark/likes.png)
+![Описание](docs/screenshots/dark/description.png)
+![Описание_1](docs/screenshots/dark/description1.png)
 
 ## Архитектура и структура
 - `lib/app.dart` — MaterialApp, тема.
