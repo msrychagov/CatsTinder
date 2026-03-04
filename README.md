@@ -92,11 +92,12 @@ flutter test
 flutter build apk --release
 ```
 
+## Скринкасты
+- [Запись экрана - Темная тема](docs/screenshots/dark/screenRecordDark.mp4)
+- [Запись экрана - Светлая тема](docs/screenshots/light/screenRecordLight.mp4)
+
 ## Скриншоты
 ### Темная тема
-Запись экрана:
-- [Темная тема](docs/screenshots/dark/screenRecordDark.mp4)
-
 Онбординг:
 
 ![Темная тема - Онбординг 1](docs/screenshots/dark/onboarding1.png)
@@ -123,9 +124,6 @@ flutter build apk --release
 ![Темная тема - Профиль 2](docs/screenshots/dark/profile2.png)
 
 ### Светлая тема
-Запись экрана:
-- [Светлая тема](docs/screenshots/light/screenRecordLight.mp4)
-
 Онбординг:
 
 ![Светлая тема - Онбординг 1](docs/screenshots/light/onboarding1.png)
