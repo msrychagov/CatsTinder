@@ -1,7 +1,11 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-import '../../data/cat_api_service.dart';
-import '../../data/likes_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_setup_task/features/auth/domain/user_profile_repository.dart';
+import 'package:flutter_setup_task/features/auth/presentation/profile_page.dart';
+
+import '../../domain/cats_repository.dart';
+import '../../domain/likes_repository.dart';
 import '../../models/cat_image.dart';
 import '../breeds/breed_list_page.dart';
 import '../liked/liked_cats_page.dart';
@@ -10,21 +14,30 @@ import '../swipe/cat_swipe_page.dart';
 class CatHomePage extends StatefulWidget {
   const CatHomePage({
     super.key,
-    required this.service,
-    required this.onToggleTheme,
-    required this.isDarkMode,
+    required this.catsRepository,
+    required this.likesRepository,
+    required this.userId,
+    required this.userEmail,
+    required this.userProfileRepository,
+    required this.onSignOut,
+    required this.themeMode,
+    required this.onThemeModeSelected,
   });
 
-  final CatApiService service;
-  final VoidCallback onToggleTheme;
-  final bool isDarkMode;
+  final CatsRepository catsRepository;
+  final LikesRepository likesRepository;
+  final String userId;
+  final String userEmail;
+  final UserProfileRepository userProfileRepository;
+  final Future<void> Function() onSignOut;
+  final ThemeMode themeMode;
+  final ValueChanged<ThemeMode> onThemeModeSelected;
 
   @override
   State<CatHomePage> createState() => _CatHomePageState();
 }
 
 class _CatHomePageState extends State<CatHomePage> {
-  final LikesStorage _storage = LikesStorage();
   final List<CatImage> _likedCats = [];
 
   @override
@@ -34,25 +47,82 @@ class _CatHomePageState extends State<CatHomePage> {
   }
 
   void _addLike(CatImage cat) {
-    final exists = _likedCats.any((c) => c.id == cat.id);
-    if (exists) return;
-    setState(() => _likedCats.add(cat));
-    _storage.saveLikes(_likedCats);
+    final exists = _likedCats.any((liked) => liked.id == cat.id);
+    if (exists) {
+      return;
+    }
+
+    late final List<CatImage> snapshot;
+    setState(() {
+      _likedCats.add(cat);
+      snapshot = List<CatImage>.from(_likedCats);
+    });
+    unawaited(_persistLikes(snapshot));
   }
 
   void _removeLike(CatImage cat) {
-    setState(() => _likedCats.removeWhere((c) => c.id == cat.id));
-    _storage.saveLikes(_likedCats);
+    late final List<CatImage> snapshot;
+    setState(() {
+      _likedCats.removeWhere((liked) => liked.id == cat.id);
+      snapshot = List<CatImage>.from(_likedCats);
+    });
+    unawaited(_persistLikes(snapshot));
   }
 
   Future<void> _restoreLikes() async {
-    final saved = await _storage.loadLikes();
-    if (!mounted || saved.isEmpty) return;
-    setState(() {
-      _likedCats
-        ..clear()
-        ..addAll(saved);
-    });
+    try {
+      final saved = await widget.likesRepository.loadLikes(widget.userId);
+      if (!mounted || saved.isEmpty) {
+        return;
+      }
+
+      setState(() {
+        _likedCats
+          ..clear()
+          ..addAll(saved);
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Не удалось загрузить лайки из облака.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _persistLikes(List<CatImage> snapshot) async {
+    try {
+      await widget.likesRepository.saveLikes(
+        userId: widget.userId,
+        cats: snapshot,
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Не удалось сохранить лайки в облако.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _openProfile() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ProfilePage(
+          userId: widget.userId,
+          userEmail: widget.userEmail,
+          repository: widget.userProfileRepository,
+          onSignOut: widget.onSignOut,
+        ),
+      ),
+    );
   }
 
   @override
@@ -67,10 +137,31 @@ class _CatHomePageState extends State<CatHomePage> {
           ),
           actions: [
             IconButton(
-              icon: Icon(
-                widget.isDarkMode ? Icons.wb_sunny_outlined : Icons.nights_stay,
-              ),
-              onPressed: widget.onToggleTheme,
+              icon: const Icon(Icons.account_circle_outlined),
+              onPressed: _openProfile,
+            ),
+            PopupMenuButton<ThemeMode>(
+              tooltip: 'Тема',
+              initialValue: widget.themeMode,
+              onSelected: widget.onThemeModeSelected,
+              icon: Icon(_themeModeIcon(widget.themeMode)),
+              itemBuilder: (context) => [
+                _themeModeItem(
+                  mode: ThemeMode.light,
+                  label: 'Светлая',
+                  icon: Icons.light_mode_outlined,
+                ),
+                _themeModeItem(
+                  mode: ThemeMode.dark,
+                  label: 'Темная',
+                  icon: Icons.dark_mode_outlined,
+                ),
+                _themeModeItem(
+                  mode: ThemeMode.system,
+                  label: 'Системная',
+                  icon: Icons.brightness_auto,
+                ),
+              ],
             ),
           ],
           bottom: const TabBar(
@@ -87,11 +178,11 @@ class _CatHomePageState extends State<CatHomePage> {
           physics: const NeverScrollableScrollPhysics(),
           children: [
             CatSwipePage(
-              service: widget.service,
+              catsRepository: widget.catsRepository,
               likedCats: _likedCats,
               onLike: _addLike,
             ),
-            BreedListPage(service: widget.service),
+            BreedListPage(catsRepository: widget.catsRepository),
             LikedCatsPage(
               likedCats: _likedCats,
               onRemove: _removeLike,
@@ -100,5 +191,32 @@ class _CatHomePageState extends State<CatHomePage> {
         ),
       ),
     );
+  }
+
+  PopupMenuItem<ThemeMode> _themeModeItem({
+    required ThemeMode mode,
+    required String label,
+    required IconData icon,
+  }) {
+    final isSelected = widget.themeMode == mode;
+    return PopupMenuItem<ThemeMode>(
+      value: mode,
+      child: Row(
+        children: [
+          Icon(icon, size: 20),
+          const SizedBox(width: 12),
+          Expanded(child: Text(label)),
+          if (isSelected) const Icon(Icons.check, size: 18),
+        ],
+      ),
+    );
+  }
+
+  IconData _themeModeIcon(ThemeMode mode) {
+    return switch (mode) {
+      ThemeMode.light => Icons.light_mode_outlined,
+      ThemeMode.dark => Icons.dark_mode_outlined,
+      ThemeMode.system => Icons.brightness_auto,
+    };
   }
 }

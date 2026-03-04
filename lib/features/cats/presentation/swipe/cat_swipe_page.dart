@@ -3,20 +3,23 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../../data/cat_api_service.dart';
+import '../../domain/cats_failure.dart';
+import '../../domain/cats_repository.dart';
 import '../../models/cat_image.dart';
 import '../detail/cat_detail_page.dart';
 import '../widgets/background_gradient.dart';
 
+enum _CardAction { like, dislike }
+
 class CatSwipePage extends StatefulWidget {
   const CatSwipePage({
     super.key,
-    required this.service,
+    required this.catsRepository,
     required this.likedCats,
     required this.onLike,
   });
 
-  final CatApiService service;
+  final CatsRepository catsRepository;
   final List<CatImage> likedCats;
   final ValueChanged<CatImage> onLike;
 
@@ -30,6 +33,8 @@ class _CatSwipePageState extends State<CatSwipePage>
   bool _loading = false;
   bool _errorVisible = false;
   bool _cardInfoVisible = true;
+  _CardAction? _pendingAction;
+  int _actionVersion = 0;
 
   @override
   void initState() {
@@ -40,7 +45,7 @@ class _CatSwipePageState extends State<CatSwipePage>
   Future<void> _loadNextCat() async {
     setState(() => _loading = true);
     try {
-      final cat = await widget.service.fetchRandomCat();
+      final cat = await widget.catsRepository.fetchRandomCat();
       if (!mounted) return;
       setState(() {
         _currentCat = cat;
@@ -50,21 +55,39 @@ class _CatSwipePageState extends State<CatSwipePage>
       if (!mounted) return;
       setState(() => _loading = false);
       _showErrorDialog(
-        e is CatApiException ? e.message : 'Не удалось загрузить котика. $e',
+        e is CatsFailure ? e.message : 'Не удалось загрузить котика. $e',
       );
     }
   }
 
   void _dislike() {
-    if (_loading) return;
+    if (!mounted || _loading) return;
+    _pendingAction = null;
     _loadNextCat();
   }
 
   void _like() {
-    if (_loading) return;
+    if (!mounted || _loading) return;
+    _pendingAction = null;
     final cat = _currentCat;
     if (cat != null) widget.onLike(cat);
     _loadNextCat();
+  }
+
+  void _dislikeFromButton() {
+    if (_loading) return;
+    setState(() {
+      _pendingAction = _CardAction.dislike;
+      _actionVersion++;
+    });
+  }
+
+  void _likeFromButton() {
+    if (_loading) return;
+    setState(() {
+      _pendingAction = _CardAction.like;
+      _actionVersion++;
+    });
   }
 
   void _openDetail() {
@@ -73,8 +96,8 @@ class _CatSwipePageState extends State<CatSwipePage>
     setState(() => _cardInfoVisible = false);
     Navigator.of(context)
         .push(
-          MaterialPageRoute(builder: (_) => CatDetailPage(cat: cat)),
-        )
+      MaterialPageRoute(builder: (_) => CatDetailPage(cat: cat)),
+    )
         .whenComplete(() {
       if (!mounted) return;
       setState(() => _cardInfoVisible = true);
@@ -117,6 +140,7 @@ class _CatSwipePageState extends State<CatSwipePage>
     final muted = onSurface.withValues(alpha: 0.7);
     final pillBg = onSurface.withValues(alpha: 0.12);
     final pillBorder = onSurface.withValues(alpha: 0.18);
+    final currentCat = _currentCat;
     super.build(context);
     return Stack(
       children: [
@@ -146,8 +170,7 @@ class _CatSwipePageState extends State<CatSwipePage>
                   child: Center(
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
-                      layoutBuilder:
-                          (currentChild, previousChildren) => Stack(
+                      layoutBuilder: (currentChild, previousChildren) => Stack(
                         alignment: Alignment.center,
                         clipBehavior: Clip.none,
                         children: [
@@ -157,15 +180,19 @@ class _CatSwipePageState extends State<CatSwipePage>
                       ),
                       child: _loading
                           ? const _LoadingCard()
-                          : _currentCat == null
+                          : currentCat == null
                               ? const _PlaceholderCard()
-                              : _CatCard(
-                                  key: ValueKey(_currentCat!.id),
-                                  cat: _currentCat!,
-                                  onTap: _openDetail,
-                                  onLike: _like,
-                                  onDislike: _dislike,
-                                  showInfo: _cardInfoVisible,
+                              : KeyedSubtree(
+                                  key: ValueKey(currentCat.id),
+                                  child: _CatCard(
+                                    cat: currentCat,
+                                    onTap: _openDetail,
+                                    onLike: _like,
+                                    onDislike: _dislike,
+                                    showInfo: _cardInfoVisible,
+                                    pendingAction: _pendingAction,
+                                    actionVersion: _actionVersion,
+                                  ),
                                 ),
                     ),
                   ),
@@ -179,7 +206,7 @@ class _CatSwipePageState extends State<CatSwipePage>
                         icon: Icons.close_rounded,
                         color: onSurface.withValues(alpha: 0.08),
                         textColor: onSurface,
-                        onPressed: _dislike,
+                        onPressed: _dislikeFromButton,
                         elevation: 1,
                       ),
                     ),
@@ -190,7 +217,7 @@ class _CatSwipePageState extends State<CatSwipePage>
                         icon: Icons.favorite_rounded,
                         color: const Color(0xFFFFB703),
                         textColor: Colors.black,
-                        onPressed: _like,
+                        onPressed: _likeFromButton,
                         elevation: 4,
                       ),
                     ),
@@ -210,11 +237,12 @@ class _CatSwipePageState extends State<CatSwipePage>
 
 class _CatCard extends StatefulWidget {
   const _CatCard({
-    super.key,
     required this.cat,
     required this.onLike,
     required this.onDislike,
     required this.onTap,
+    required this.pendingAction,
+    required this.actionVersion,
     this.showInfo = true,
   });
 
@@ -222,6 +250,8 @@ class _CatCard extends StatefulWidget {
   final VoidCallback onLike;
   final VoidCallback onDislike;
   final VoidCallback onTap;
+  final _CardAction? pendingAction;
+  final int actionVersion;
   final bool showInfo;
 
   @override
@@ -239,18 +269,40 @@ class _CatCardState extends State<_CatCard>
   Animation<Offset>? _offsetAnimation;
   Offset _offset = Offset.zero;
   double _angle = 0;
+  double _screenWidth = 1;
+  bool _isAnimatingOut = false;
+  int _lastHandledActionVersion = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _screenWidth = MediaQuery.sizeOf(context).width;
+  }
 
   @override
   void dispose() {
+    _controller.removeListener(_onAnimate);
     _controller.dispose();
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant _CatCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final pendingAction = widget.pendingAction;
+    if (pendingAction == null) return;
+    if (widget.actionVersion == _lastHandledActionVersion) return;
+    _lastHandledActionVersion = widget.actionVersion;
+    _animateOut(pendingAction == _CardAction.like ? 1.0 : -1.0);
+  }
+
   void _onAnimate() {
-    if (_offsetAnimation != null) {
+    if (!mounted) return;
+    final offsetAnimation = _offsetAnimation;
+    if (offsetAnimation != null) {
       setState(() {
-        _offset = _offsetAnimation!.value;
-        _angle = _offset.dx / MediaQuery.of(context).size.width * 0.15;
+        _offset = offsetAnimation.value;
+        _angle = _offset.dx / _screenWidth * 0.15;
       });
     }
   }
@@ -261,40 +313,53 @@ class _CatCardState extends State<_CatCard>
     );
     _controller
       ..reset()
-      ..forward().whenComplete(() {
-        if (onCompleted != null) onCompleted();
+      ..forward().then<void>((_) {
+        if (!mounted) return;
+        onCompleted?.call();
+      }).catchError((Object error) {
+        if (error is! TickerCanceled) throw error;
       });
   }
 
+  void _animateOut(double direction) {
+    if (_isAnimatingOut) return;
+    _isAnimatingOut = true;
+    final target = Offset(direction * _screenWidth * 1.4, _offset.dy);
+    _animateTo(
+      target,
+      onCompleted: () {
+        if (direction > 0) {
+          widget.onLike();
+        } else {
+          widget.onDislike();
+        }
+        _isAnimatingOut = false;
+      },
+    );
+  }
+
   void _onPanUpdate(DragUpdateDetails details) {
+    if (_isAnimatingOut) return;
     final dx = _offset.dx + details.delta.dx;
     final dy = _offset.dy + details.delta.dy;
-    final width = MediaQuery.of(context).size.width;
     setState(() {
       _offset = Offset(dx, dy.clamp(-80, 80));
-      _angle = dx / width * 0.15;
+      _angle = dx / _screenWidth * 0.15;
     });
   }
 
   void _onPanEnd(DragEndDetails details) {
-    final width = MediaQuery.of(context).size.width;
+    if (_isAnimatingOut) return;
     const threshold = 0.18;
-    final normalized = _offset.dx / width;
+    final normalized = _offset.dx / _screenWidth;
     final velocityX = details.velocity.pixelsPerSecond.dx;
     final hasVelocity = velocityX.abs() > 800;
     final direction = hasVelocity
         ? velocityX.sign
-        : (normalized.abs() > threshold ? normalized.sign : 0);
+        : (normalized.abs() > threshold ? normalized.sign : 0.0);
 
-    if (direction != 0) {
-      final target = Offset(direction * width * 1.4, _offset.dy);
-      _animateTo(
-        target,
-        onCompleted: () {
-          direction > 0 ? widget.onLike() : widget.onDislike();
-          _resetPosition();
-        },
-      );
+    if (direction != 0.0) {
+      _animateOut(direction);
     } else {
       _animateTo(Offset.zero, onCompleted: _resetPosition);
     }

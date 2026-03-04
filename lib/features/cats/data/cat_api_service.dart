@@ -3,17 +3,9 @@ import 'dart:math';
 
 import 'package:http/http.dart' as http;
 
+import '../domain/cats_failure.dart';
 import '../models/breed.dart';
 import '../models/cat_image.dart';
-
-class CatApiException implements Exception {
-  CatApiException(this.message);
-
-  final String message;
-
-  @override
-  String toString() => message;
-}
 
 class CatApiService {
   CatApiService({http.Client? client}) : _client = client ?? http.Client();
@@ -32,20 +24,20 @@ class CatApiService {
       final cat = await _fetchByBreed(breed);
       if (cat != null) return cat;
     }
-    throw CatApiException(
+    throw CatsFailure(
         'Сервис не прислал котика с породой. Попробуйте ещё раз.');
   }
 
   Future<List<Breed>> fetchBreeds() async {
-    _breedsFuture ??= _loadBreeds();
-    return _breedsFuture!;
+    final future = _breedsFuture ??= _loadBreeds();
+    return future;
   }
 
   Future<List<Breed>> _loadBreeds() async {
     final uri = Uri.parse('$_baseUrl/breeds');
     final response = await _client.get(uri);
     if (response.statusCode != 200) {
-      throw CatApiException('Код ответа: ${response.statusCode}');
+      throw CatsFailure('Код ответа: ${response.statusCode}');
     }
     final data = json.decode(response.body) as List<dynamic>;
     return data.map((e) => Breed.fromJson(e as Map<String, dynamic>)).toList();
@@ -57,7 +49,7 @@ class CatApiService {
       final uri = Uri.parse('$_baseUrl/images/search?has_breeds=1');
       final response = await _client.get(uri);
       if (response.statusCode != 200) {
-        throw CatApiException('Код ответа: ${response.statusCode}');
+        throw CatsFailure('Код ответа: ${response.statusCode}');
       }
       final data = json.decode(response.body) as List<dynamic>;
       if (data.isEmpty) continue;

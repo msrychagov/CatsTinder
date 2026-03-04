@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "992747231860",
+    "project_id": "catstinder-d04bb",
+    "storage_bucket": "catstinder-d04bb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:992747231860:android:303d5413f9380c7c6d4f21",
+        "android_client_info": {
+          "package_name": "com.example.flutter_setup_task"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWaJQveiHlW2ReoygcB3ut6jUoWOwUcv0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

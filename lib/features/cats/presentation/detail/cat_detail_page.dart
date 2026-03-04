@@ -74,14 +74,16 @@ class BreedDetailPage extends StatelessWidget {
   final Breed breed;
 
   String? get _referenceImageUrl {
-    if (breed.referenceImageId == null || breed.referenceImageId!.isEmpty) {
+    final imageId = breed.referenceImageId;
+    if (imageId == null || imageId.isEmpty) {
       return null;
     }
-    return 'https://cdn2.thecatapi.com/images/${breed.referenceImageId}.jpg';
+    return 'https://cdn2.thecatapi.com/images/$imageId.jpg';
   }
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = _referenceImageUrl;
     final scheme = Theme.of(context).colorScheme;
     final onSurface = scheme.onSurface;
     final muted = onSurface.withValues(alpha: 0.7);
@@ -93,7 +95,7 @@ class BreedDetailPage extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(24),
-            child: _referenceImageUrl == null
+            child: imageUrl == null
                 ? Container(
                     height: 260,
                     color: onSurface.withValues(alpha: 0.06),
@@ -101,7 +103,7 @@ class BreedDetailPage extends StatelessWidget {
                         color: onSurface.withValues(alpha: 0.5), size: 64),
                   )
                 : CachedNetworkImage(
-                    imageUrl: _referenceImageUrl!,
+                    imageUrl: imageUrl,
                     height: 260,
                     fit: BoxFit.cover,
                     placeholder: (context, _) => Container(
@@ -115,7 +117,7 @@ class BreedDetailPage extends StatelessWidget {
                       color: onSurface.withValues(alpha: 0.06),
                       child: Icon(Icons.pets,
                           color: onSurface.withValues(alpha: 0.5), size: 64),
-                  ),
+                    ),
                   ),
           ),
           const SizedBox(height: 18),

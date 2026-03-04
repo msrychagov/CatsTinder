@@ -1,15 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../../data/cat_api_service.dart';
+import '../../domain/cats_repository.dart';
 import '../../models/breed.dart';
 import '../detail/cat_detail_page.dart';
 import '../widgets/background_gradient.dart';
 
 class BreedListPage extends StatefulWidget {
-  const BreedListPage({super.key, required this.service});
+  const BreedListPage({super.key, required this.catsRepository});
 
-  final CatApiService service;
+  final CatsRepository catsRepository;
 
   @override
   State<BreedListPage> createState() => _BreedListPageState();
@@ -23,12 +23,12 @@ class _BreedListPageState extends State<BreedListPage>
   @override
   void initState() {
     super.initState();
-    _breedsFuture = widget.service.fetchBreeds();
+    _breedsFuture = widget.catsRepository.fetchBreeds();
   }
 
   Future<void> _reload() async {
     setState(() {
-      _breedsFuture = widget.service.fetchBreeds();
+      _breedsFuture = widget.catsRepository.fetchBreeds();
       _errorShown = false;
     });
     await _breedsFuture;
@@ -131,6 +131,7 @@ class _BreedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = _referenceImageUrl;
     final scheme = Theme.of(context).colorScheme;
     final onSurface = scheme.onSurface;
     final muted = onSurface.withValues(alpha: 0.7);
@@ -156,22 +157,22 @@ class _BreedCard extends StatelessWidget {
               child: SizedBox(
                 width: 110,
                 height: 110,
-                child: _referenceImageUrl == null
+                child: imageUrl == null
                     ? Container(
                         color: placeholder,
                         child: Icon(Icons.pets,
                             color: onSurface.withValues(alpha: 0.5)),
                       )
                     : CachedNetworkImage(
-                        imageUrl: _referenceImageUrl!,
+                        imageUrl: imageUrl,
                         fit: BoxFit.cover,
                         placeholder: (context, _) => Container(
                           color: placeholder,
                           child: const Center(
                               child: CircularProgressIndicator.adaptive()),
                         ),
-                        errorWidget: (_, __, ___) =>
-                            Icon(Icons.pets, color: onSurface.withValues(alpha: 0.5)),
+                        errorWidget: (_, __, ___) => Icon(Icons.pets,
+                            color: onSurface.withValues(alpha: 0.5)),
                       ),
               ),
             ),

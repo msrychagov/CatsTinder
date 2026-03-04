@@ -11,8 +11,8 @@ class SectionCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final onSurface = scheme.onSurface;
     final border = onSurface.withValues(alpha: 0.1);
-    final bg = scheme.surfaceContainerHighest.withValues(
-        alpha: scheme.brightness == Brightness.dark ? 0.06 : 0.5);
+    final bg = scheme.surfaceContainerHighest
+        .withValues(alpha: scheme.brightness == Brightness.dark ? 0.06 : 0.5);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -25,8 +25,7 @@ class SectionCard extends StatelessWidget {
         children: [
           Text(
             title,
-            style:
-                TextStyle(color: onSurface, fontWeight: FontWeight.w700),
+            style: TextStyle(color: onSurface, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           child,

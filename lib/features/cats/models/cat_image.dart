@@ -21,7 +21,9 @@ class CatImage {
       url: json['url'] as String? ?? '',
       breed: Breed.fromJson(breeds.first as Map<String, dynamic>),
       aspectRatio: aspect ??
-          (width != null && height != null && height > 0 ? width / height : null),
+          (width != null && height != null && height > 0
+              ? width / height
+              : null),
     );
   }
 
