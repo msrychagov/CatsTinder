@@ -94,39 +94,68 @@ flutter build apk --release
 
 ## Скриншоты
 ### Темная тема
-- Онбординг:
-  - `docs/screenshots/dark/onboarding1.png`
-  - `docs/screenshots/dark/onboarding2.png`
-  - `docs/screenshots/dark/onboarding3.png`
-- Авторизация:
-  - `docs/screenshots/dark/singIn.png`
-  - `docs/screenshots/dark/singUp1.png`
-  - `docs/screenshots/dark/singUp2.png`
-- Основной flow:
-  - `docs/screenshots/dark/discover.png`
-  - `docs/screenshots/dark/types.png`
-  - `docs/screenshots/dark/likes.png`
-  - `docs/screenshots/dark/description1.png`
-  - `docs/screenshots/dark/description2.png`
-- Профиль:
-  - `docs/screenshots/dark/profile1.png`
-  - `docs/screenshots/dark/profile2.png`
+Запись экрана:
+- [Темная тема](docs/screenshots/dark/screenRecordDark.mp4)
+
+Онбординг:
+
+![Темная тема - Онбординг 1](docs/screenshots/dark/onboarding1.png)
+![Темная тема - Онбординг 2](docs/screenshots/dark/onboarding2.png)
+![Темная тема - Онбординг 3](docs/screenshots/dark/onboarding3.png)
+
+Авторизация:
+
+![Темная тема - Вход](docs/screenshots/dark/singIn.png)
+![Темная тема - Регистрация 1](docs/screenshots/dark/singUp1.png)
+![Темная тема - Регистрация 2](docs/screenshots/dark/singUp2.png)
+
+Основной flow:
+
+![Темная тема - Лента](docs/screenshots/dark/discover.png)
+![Темная тема - Породы](docs/screenshots/dark/types.png)
+![Темная тема - Лайки](docs/screenshots/dark/likes.png)
+![Темная тема - Детали 1](docs/screenshots/dark/description1.png)
+![Темная тема - Детали 2](docs/screenshots/dark/description2.png)
+
+Профиль:
+
+![Темная тема - Профиль 1](docs/screenshots/dark/profile1.png)
+![Темная тема - Профиль 2](docs/screenshots/dark/profile2.png)
 
 ### Светлая тема
-- Основной flow:
-  - `docs/screenshots/light/discover.png`
-  - `docs/screenshots/light/types.png`
-  - `docs/screenshots/light/likes.png`
-  - `docs/screenshots/light/description1.png`
-  - `docs/screenshots/light/description2.png`
-- Профиль:
-  - `docs/screenshots/light/profile1.png`
-  - `docs/screenshots/light/profile2.png`
+Запись экрана:
+- [Светлая тема](docs/screenshots/light/screenRecordLight.mp4)
+
+Онбординг:
+
+![Светлая тема - Онбординг 1](docs/screenshots/light/onboarding1.png)
+![Светлая тема - Онбординг 2](docs/screenshots/light/onboarding2.png)
+![Светлая тема - Онбординг 3](docs/screenshots/light/onboarding3.png)
+
+Авторизация:
+
+![Светлая тема - Вход](docs/screenshots/light/signIn.png)
+![Светлая тема - Регистрация 1](docs/screenshots/light/signUp1.png)
+![Светлая тема - Регистрация 2](docs/screenshots/light/signUp2.png)
+
+Основной flow:
+
+![Светлая тема - Лента](docs/screenshots/light/discover.png)
+![Светлая тема - Породы](docs/screenshots/light/types.png)
+![Светлая тема - Лайки](docs/screenshots/light/likes.png)
+![Светлая тема - Детали 1](docs/screenshots/light/description1.png)
+![Светлая тема - Детали 2](docs/screenshots/light/description2.png)
+
+Профиль:
+
+![Светлая тема - Профиль 1](docs/screenshots/light/profile1.png)
+![Светлая тема - Профиль 2](docs/screenshots/light/profile2.png)
 
 ### Firebase Analytics
-- Реальные события в консоли Firebase:
-  - `docs/screenshots/analytics/realTimeEvents1.png`
-  - `docs/screenshots/analytics/realTimeEvents2.png`
+Реальные события в консоли Firebase:
+
+![Firebase Analytics - Реальные события 1](docs/screenshots/analytics/realTimeEvents1.png)
+![Firebase Analytics - Реальные события 2](docs/screenshots/analytics/realTimeEvents2.png)
 
 Примечание:
 - При первом запуске приложение использует системную тему устройства, но пользователь может в любой момент вручную переключить тему на светлую, темную или снова системную.
