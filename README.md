@@ -72,8 +72,8 @@ flutter test
 При ошибке анализатора или тестов пайплайн падает.
 
 ## APK
-Актуальная релизная сборка:
-- https://drive.google.com/file/d/1_FkTodzw7BvO5FaW2tGRQgGW8UWOGDHG/view?usp=drive_link
+Актуальная релизная сборка доступна в GitHub Releases:
+- https://github.com/msrychagov/CatsTinder/releases/latest
 
 Локальный файл появляется после сборки:
 - `build/app/outputs/flutter-apk/app-release.apk`
