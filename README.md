@@ -20,9 +20,14 @@ Flutter-приложение для свайпа котиков с TheCatAPI. В
 - Удаленное хранение анкеты пользователя в Firebase:
   - Cloud Firestore для текстовых полей и характеристик
   - Firebase Storage для фото профиля
-- Логирование auth-событий в Firebase Analytics:
+- Логирование событий в Firebase Analytics:
   - `auth_sign_in` (`success`/`failure`)
   - `auth_sign_up` (`success`/`failure`)
+  - `cat_action_button_tap` (`action=like|dislike`)
+  - `cat_reaction` (`action=like|dislike`, `trigger=button|swipe`)
+  - `cat_detail_open` (`source=swipe_feed|liked_list`)
+  - `liked_cat_remove` (`source=button|swipe`)
+  - Для событий по котикам отправляются параметры контекста: `cat_id`, `breed_id`, `breed_name`, `origin`, `energy_level`, `intelligence`, `affection_level`, `social_needs`, `likes_count_before`, `likes_count_after`
 
 ## Архитектура
 Проект разложен по слоям `Data / Domain / Presentation` в рамках feature-модулей:
@@ -43,6 +48,7 @@ Flutter-приложение для свайпа котиков с TheCatAPI. В
 - Профиль пользователя хранится в Cloud Firestore (`user_profiles/{uid}`)
 - Фото профиля хранится удаленно. Основной путь: Firebase Storage (`user_profiles/{uid}/avatar_*`).
 - Для совместимости предусмотрен резервный удаленный формат хранения фото в Firestore, если клиент не может получить download URL сразу после загрузки.
+- Аналитика отправляется в Firebase Analytics для auth-сценариев и действий в ленте котиков.
 
 ## Тесты
 Покрытие требований:
@@ -53,6 +59,9 @@ Flutter-приложение для свайпа котиков с TheCatAPI. В
 - Widget-тесты auth-сценариев:
   - `test/features/auth/presentation/auth_flow_widget_test.dart`
   - `test/features/auth/presentation/sign_up_page_widget_test.dart`
+- Widget-тесты пользовательских действий в экранах котиков:
+  - `test/features/cats/presentation/cat_swipe_page_widget_test.dart`
+  - `test/features/cats/presentation/liked_cats_page_widget_test.dart`
 
 Запуск:
 ```bash
@@ -113,6 +122,11 @@ flutter build apk --release
 - Профиль:
   - `docs/screenshots/light/profile1.png`
   - `docs/screenshots/light/profile2.png`
+
+### Firebase Analytics
+- Реальные события в консоли Firebase:
+  - `docs/screenshots/analytics/realTimeEvents1.png`
+  - `docs/screenshots/analytics/realTimeEvents2.png`
 
 Примечание:
 - При первом запуске приложение использует системную тему устройства, но пользователь может в любой момент вручную переключить тему на светлую, темную или снова системную.

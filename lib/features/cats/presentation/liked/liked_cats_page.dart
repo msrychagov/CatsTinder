@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../domain/cat_analytics.dart';
 import '../../models/cat_image.dart';
 import '../detail/cat_detail_page.dart';
 import '../widgets/background_gradient.dart';
@@ -8,10 +11,12 @@ import '../widgets/background_gradient.dart';
 class LikedCatsPage extends StatefulWidget {
   const LikedCatsPage({
     super.key,
+    required this.analytics,
     required this.likedCats,
     required this.onRemove,
   });
 
+  final CatAnalytics analytics;
   final List<CatImage> likedCats;
   final ValueChanged<CatImage> onRemove;
 
@@ -21,6 +26,45 @@ class LikedCatsPage extends StatefulWidget {
 
 class _LikedCatsPageState extends State<LikedCatsPage>
     with AutomaticKeepAliveClientMixin {
+  void _logAnalytics(Future<void> action) {
+    unawaited(_safeAnalytics(action));
+  }
+
+  Future<void> _safeAnalytics(Future<void> action) async {
+    try {
+      await action;
+    } catch (_) {
+      // Ignore analytics failures so they do not break likes flow.
+    }
+  }
+
+  void _openDetail(CatImage cat) {
+    _logAnalytics(
+      widget.analytics.logDetailOpened(
+        source: 'liked_list',
+        cat: cat,
+        likesCount: widget.likedCats.length,
+      ),
+    );
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => CatDetailPage(cat: cat)),
+    );
+  }
+
+  void _removeCat(CatImage cat, {required String source}) {
+    _logAnalytics(
+      widget.analytics.logLikedCatRemoved(
+        source: source,
+        cat: cat,
+        likesCountBefore: widget.likedCats.length,
+        likesCountAfter: widget.likedCats.isNotEmpty
+            ? widget.likedCats.length - 1
+            : 0,
+      ),
+    );
+    widget.onRemove(cat);
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -55,10 +99,11 @@ class _LikedCatsPageState extends State<LikedCatsPage>
               key: ValueKey(cat.id),
               direction: DismissDirection.endToStart,
               background: _DismissBackground(color: scheme.error),
-              onDismissed: (_) => widget.onRemove(cat),
+              onDismissed: (_) => _removeCat(cat, source: 'swipe'),
               child: _LikedCard(
                 cat: cat,
-                onRemove: () => widget.onRemove(cat),
+                onOpenDetail: () => _openDetail(cat),
+                onRemove: () => _removeCat(cat, source: 'button'),
                 bg: cardBg,
                 border: cardBorder,
                 placeholder: placeholder,
@@ -81,6 +126,7 @@ class _LikedCatsPageState extends State<LikedCatsPage>
 class _LikedCard extends StatelessWidget {
   const _LikedCard({
     required this.cat,
+    required this.onOpenDetail,
     required this.onRemove,
     required this.bg,
     required this.border,
@@ -90,6 +136,7 @@ class _LikedCard extends StatelessWidget {
   });
 
   final CatImage cat;
+  final VoidCallback onOpenDetail;
   final VoidCallback onRemove;
   final Color bg;
   final Color border;
@@ -102,11 +149,7 @@ class _LikedCard extends StatelessWidget {
     final breed = cat.breed;
     return InkWell(
       borderRadius: BorderRadius.circular(20),
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => CatDetailPage(cat: cat)),
-        );
-      },
+      onTap: onOpenDetail,
       child: Container(
         decoration: BoxDecoration(
           color: bg,
@@ -164,6 +207,7 @@ class _LikedCard extends StatelessWidget {
               top: 6,
               right: 6,
               child: IconButton(
+                key: const Key('liked_remove_button'),
                 visualDensity: VisualDensity.compact,
                 style: IconButton.styleFrom(
                   backgroundColor: Colors.black.withValues(alpha: 0.35),

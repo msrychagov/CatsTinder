@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../domain/cat_analytics.dart';
 import '../../domain/cats_failure.dart';
 import '../../domain/cats_repository.dart';
 import '../../models/cat_image.dart';
@@ -10,16 +12,29 @@ import '../detail/cat_detail_page.dart';
 import '../widgets/background_gradient.dart';
 
 enum _CardAction { like, dislike }
+enum _ActionTrigger { button, swipe }
+
+class _PendingAction {
+  const _PendingAction({
+    required this.action,
+    required this.trigger,
+  });
+
+  final _CardAction action;
+  final _ActionTrigger trigger;
+}
 
 class CatSwipePage extends StatefulWidget {
   const CatSwipePage({
     super.key,
     required this.catsRepository,
+    required this.analytics,
     required this.likedCats,
     required this.onLike,
   });
 
   final CatsRepository catsRepository;
+  final CatAnalytics analytics;
   final List<CatImage> likedCats;
   final ValueChanged<CatImage> onLike;
 
@@ -33,7 +48,7 @@ class _CatSwipePageState extends State<CatSwipePage>
   bool _loading = false;
   bool _errorVisible = false;
   bool _cardInfoVisible = true;
-  _CardAction? _pendingAction;
+  _PendingAction? _pendingAction;
   int _actionVersion = 0;
 
   @override
@@ -60,32 +75,83 @@ class _CatSwipePageState extends State<CatSwipePage>
     }
   }
 
-  void _dislike() {
+  void _dislike(_ActionTrigger trigger) {
     if (!mounted || _loading) return;
+    final cat = _currentCat;
     _pendingAction = null;
+    if (cat != null) {
+      _logAnalytics(
+        widget.analytics.logReaction(
+          action: 'dislike',
+          trigger: _triggerName(trigger),
+          cat: cat,
+          likesCountBefore: widget.likedCats.length,
+          likesCountAfter: widget.likedCats.length,
+        ),
+      );
+    }
     _loadNextCat();
   }
 
-  void _like() {
+  void _like(_ActionTrigger trigger) {
     if (!mounted || _loading) return;
-    _pendingAction = null;
     final cat = _currentCat;
-    if (cat != null) widget.onLike(cat);
+    _pendingAction = null;
+    if (cat != null) {
+      final exists = widget.likedCats.any((liked) => liked.id == cat.id);
+      _logAnalytics(
+        widget.analytics.logReaction(
+          action: 'like',
+          trigger: _triggerName(trigger),
+          cat: cat,
+          likesCountBefore: widget.likedCats.length,
+          likesCountAfter:
+              exists ? widget.likedCats.length : widget.likedCats.length + 1,
+        ),
+      );
+      widget.onLike(cat);
+    }
     _loadNextCat();
   }
 
   void _dislikeFromButton() {
     if (_loading) return;
+    final cat = _currentCat;
+    if (cat != null) {
+      _logAnalytics(
+        widget.analytics.logActionButtonTap(
+          action: 'dislike',
+          cat: cat,
+          likesCountBefore: widget.likedCats.length,
+        ),
+      );
+    }
     setState(() {
-      _pendingAction = _CardAction.dislike;
+      _pendingAction = const _PendingAction(
+        action: _CardAction.dislike,
+        trigger: _ActionTrigger.button,
+      );
       _actionVersion++;
     });
   }
 
   void _likeFromButton() {
     if (_loading) return;
+    final cat = _currentCat;
+    if (cat != null) {
+      _logAnalytics(
+        widget.analytics.logActionButtonTap(
+          action: 'like',
+          cat: cat,
+          likesCountBefore: widget.likedCats.length,
+        ),
+      );
+    }
     setState(() {
-      _pendingAction = _CardAction.like;
+      _pendingAction = const _PendingAction(
+        action: _CardAction.like,
+        trigger: _ActionTrigger.button,
+      );
       _actionVersion++;
     });
   }
@@ -93,6 +159,13 @@ class _CatSwipePageState extends State<CatSwipePage>
   void _openDetail() {
     final cat = _currentCat;
     if (cat == null) return;
+    _logAnalytics(
+      widget.analytics.logDetailOpened(
+        source: 'swipe_feed',
+        cat: cat,
+        likesCount: widget.likedCats.length,
+      ),
+    );
     setState(() => _cardInfoVisible = false);
     Navigator.of(context)
         .push(
@@ -131,6 +204,25 @@ class _CatSwipePageState extends State<CatSwipePage>
         ],
       ),
     );
+  }
+
+  void _logAnalytics(Future<void> action) {
+    unawaited(_safeAnalytics(action));
+  }
+
+  Future<void> _safeAnalytics(Future<void> action) async {
+    try {
+      await action;
+    } catch (_) {
+      // Ignore analytics failures so they do not break cat flow.
+    }
+  }
+
+  String _triggerName(_ActionTrigger trigger) {
+    return switch (trigger) {
+      _ActionTrigger.button => 'button',
+      _ActionTrigger.swipe => 'swipe',
+    };
   }
 
   @override
@@ -202,6 +294,7 @@ class _CatSwipePageState extends State<CatSwipePage>
                   children: [
                     Expanded(
                       child: _ActionButton(
+                        buttonKey: const Key('dislike_button'),
                         label: 'Дизлайк',
                         icon: Icons.close_rounded,
                         color: onSurface.withValues(alpha: 0.08),
@@ -213,6 +306,7 @@ class _CatSwipePageState extends State<CatSwipePage>
                     const SizedBox(width: 12),
                     Expanded(
                       child: _ActionButton(
+                        buttonKey: const Key('like_button'),
                         label: 'Лайк',
                         icon: Icons.favorite_rounded,
                         color: const Color(0xFFFFB703),
@@ -247,10 +341,10 @@ class _CatCard extends StatefulWidget {
   });
 
   final CatImage cat;
-  final VoidCallback onLike;
-  final VoidCallback onDislike;
+  final ValueChanged<_ActionTrigger> onLike;
+  final ValueChanged<_ActionTrigger> onDislike;
   final VoidCallback onTap;
-  final _CardAction? pendingAction;
+  final _PendingAction? pendingAction;
   final int actionVersion;
   final bool showInfo;
 
@@ -263,15 +357,22 @@ class _CatCardState extends State<_CatCard>
   static const double _heroRadius = 32;
   static const BorderRadius _heroBorderRadius =
       BorderRadius.all(Radius.circular(_heroRadius));
-  late final AnimationController _controller = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 250))
-    ..addListener(_onAnimate);
+  late final AnimationController _controller;
   Animation<Offset>? _offsetAnimation;
   Offset _offset = Offset.zero;
   double _angle = 0;
   double _screenWidth = 1;
   bool _isAnimatingOut = false;
   int _lastHandledActionVersion = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    )..addListener(_onAnimate);
+  }
 
   @override
   void didChangeDependencies() {
@@ -293,7 +394,10 @@ class _CatCardState extends State<_CatCard>
     if (pendingAction == null) return;
     if (widget.actionVersion == _lastHandledActionVersion) return;
     _lastHandledActionVersion = widget.actionVersion;
-    _animateOut(pendingAction == _CardAction.like ? 1.0 : -1.0);
+    _animateOut(
+      pendingAction.action == _CardAction.like ? 1.0 : -1.0,
+      pendingAction.trigger,
+    );
   }
 
   void _onAnimate() {
@@ -321,7 +425,7 @@ class _CatCardState extends State<_CatCard>
       });
   }
 
-  void _animateOut(double direction) {
+  void _animateOut(double direction, _ActionTrigger trigger) {
     if (_isAnimatingOut) return;
     _isAnimatingOut = true;
     final target = Offset(direction * _screenWidth * 1.4, _offset.dy);
@@ -329,9 +433,9 @@ class _CatCardState extends State<_CatCard>
       target,
       onCompleted: () {
         if (direction > 0) {
-          widget.onLike();
+          widget.onLike(trigger);
         } else {
-          widget.onDislike();
+          widget.onDislike(trigger);
         }
         _isAnimatingOut = false;
       },
@@ -359,7 +463,7 @@ class _CatCardState extends State<_CatCard>
         : (normalized.abs() > threshold ? normalized.sign : 0.0);
 
     if (direction != 0.0) {
-      _animateOut(direction);
+      _animateOut(direction, _ActionTrigger.swipe);
     } else {
       _animateTo(Offset.zero, onCompleted: _resetPosition);
     }
@@ -591,6 +695,7 @@ class _LikesPill extends StatelessWidget {
 
 class _ActionButton extends StatelessWidget {
   const _ActionButton({
+    this.buttonKey,
     required this.label,
     required this.icon,
     required this.color,
@@ -599,6 +704,7 @@ class _ActionButton extends StatelessWidget {
     this.elevation = 0,
   });
 
+  final Key? buttonKey;
   final String label;
   final IconData icon;
   final Color color;
@@ -609,6 +715,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
+      key: buttonKey,
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: color,

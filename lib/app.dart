@@ -170,6 +170,7 @@ class _MyAppState extends State<MyApp> {
     return CatHomePage(
       catsRepository: widget.dependencies.catsRepository,
       likesRepository: widget.dependencies.likesRepository,
+      catAnalytics: widget.dependencies.catAnalytics,
       userId: currentUser.id,
       userEmail: currentUser.email,
       userProfileRepository: widget.dependencies.userProfileRepository,

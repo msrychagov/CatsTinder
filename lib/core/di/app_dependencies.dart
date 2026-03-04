@@ -13,9 +13,11 @@ import '../../features/auth/domain/auth_analytics.dart';
 import '../../features/auth/domain/auth_repository.dart';
 import '../../features/auth/domain/user_profile_repository.dart';
 import '../../features/cats/data/cat_api_service.dart';
+import '../../features/cats/data/firebase_cat_analytics.dart';
 import '../../features/cats/data/firebase_likes_repository.dart';
 import '../../features/cats/data/likes_storage.dart';
 import '../../features/cats/data/the_cat_api_cats_repository.dart';
+import '../../features/cats/domain/cat_analytics.dart';
 import '../../features/cats/domain/cats_repository.dart';
 import '../../features/cats/domain/likes_repository.dart';
 import '../../features/onboarding/data/shared_prefs_onboarding_repository.dart';
@@ -30,6 +32,7 @@ class AppDependencies {
     required this.onboardingRepository,
     required this.catsRepository,
     required this.likesRepository,
+    required this.catAnalytics,
   });
 
   final AuthRepository authRepository;
@@ -39,6 +42,7 @@ class AppDependencies {
   final OnboardingRepository onboardingRepository;
   final CatsRepository catsRepository;
   final LikesRepository likesRepository;
+  final CatAnalytics catAnalytics;
 }
 
 Future<AppDependencies> buildAppDependencies() async {
@@ -66,6 +70,7 @@ Future<AppDependencies> buildAppDependencies() async {
     FirebaseFirestore.instance,
     localStorage: likesStorage,
   );
+  final catAnalytics = FirebaseCatAnalytics(FirebaseAnalytics.instance);
 
   return AppDependencies(
     authRepository: authRepository,
@@ -75,6 +80,7 @@ Future<AppDependencies> buildAppDependencies() async {
     onboardingRepository: onboardingRepository,
     catsRepository: catsRepository,
     likesRepository: likesRepository,
+    catAnalytics: catAnalytics,
   );
 }
 

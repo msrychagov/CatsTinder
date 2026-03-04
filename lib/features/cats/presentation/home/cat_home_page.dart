@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_setup_task/features/auth/domain/user_profile_repository.dart';
 import 'package:flutter_setup_task/features/auth/presentation/profile_page.dart';
 
+import '../../domain/cat_analytics.dart';
 import '../../domain/cats_repository.dart';
 import '../../domain/likes_repository.dart';
 import '../../models/cat_image.dart';
@@ -16,6 +17,7 @@ class CatHomePage extends StatefulWidget {
     super.key,
     required this.catsRepository,
     required this.likesRepository,
+    required this.catAnalytics,
     required this.userId,
     required this.userEmail,
     required this.userProfileRepository,
@@ -26,6 +28,7 @@ class CatHomePage extends StatefulWidget {
 
   final CatsRepository catsRepository;
   final LikesRepository likesRepository;
+  final CatAnalytics catAnalytics;
   final String userId;
   final String userEmail;
   final UserProfileRepository userProfileRepository;
@@ -179,11 +182,13 @@ class _CatHomePageState extends State<CatHomePage> {
           children: [
             CatSwipePage(
               catsRepository: widget.catsRepository,
+              analytics: widget.catAnalytics,
               likedCats: _likedCats,
               onLike: _addLike,
             ),
             BreedListPage(catsRepository: widget.catsRepository),
             LikedCatsPage(
+              analytics: widget.catAnalytics,
               likedCats: _likedCats,
               onRemove: _removeLike,
             ),
